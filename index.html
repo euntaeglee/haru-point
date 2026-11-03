@@ -5,12 +5,13 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&display=swap">
 <style>
-/* Layout: one tall card — title, three point counters, a big grape bunch you tap, a sheet that pops up to pick why. */
+/* Layout: one-screen app — title, point counters, a horizontal snap carousel with one grape bunch per screen, numbered pager. */
 :root{
   --bg:#EEF5E6;          /* pale vineyard leaf */
   --card:#FFFFFF;
   --ink:#3B2A4A;         /* deep grape ink */
   --soft:#7D6E8A;
+  --title:#5E2D92;
   --grape:#8A4FC2;       /* ripe grape */
   --grape-hi:#C9A2F0;
   --grape-lo:#5E2D92;
@@ -22,145 +23,137 @@
   --leaf-lo:#3F7E30;
   --stem:#8B6A45;
   --sun:#FFC845;
+  --danger:#E0565B;
   --shadow:rgba(80,40,120,.18);
   --scrim:rgba(40,25,55,.45);
   --display:"Jua","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
   --body:"Gowun Dodum","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
-  --g:min(12.5vw,104px);  /* grape size */
+  --g:80px;              /* grape size, set from the carousel's size by script */
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --bg:#1C1824;--card:#2A2334;--ink:#F3EAFB;--soft:#B9A9C9;
+  --bg:#1C1824;--card:#2A2334;--ink:#F3EAFB;--soft:#B9A9C9;--title:#DABDF7;
   --grape:#A56BE0;--grape-hi:#DABDF7;--grape-lo:#6B36A3;
   --empty:#352C42;--empty-line:#5E4D75;--used:#3E3748;--used-ink:#8D8299;
-  --leaf:#6FBE59;--leaf-lo:#4C8F3B;--stem:#A88660;--sun:#FFD36B;
+  --leaf:#6FBE59;--leaf-lo:#4C8F3B;--stem:#A88660;--sun:#FFD36B;--danger:#F07075;
   --shadow:rgba(0,0,0,.4);--scrim:rgba(0,0,0,.6);color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#1C1824;--card:#2A2334;--ink:#F3EAFB;--soft:#B9A9C9;
+  --bg:#1C1824;--card:#2A2334;--ink:#F3EAFB;--soft:#B9A9C9;--title:#DABDF7;
   --grape:#A56BE0;--grape-hi:#DABDF7;--grape-lo:#6B36A3;
   --empty:#352C42;--empty-line:#5E4D75;--used:#3E3748;--used-ink:#8D8299;
-  --leaf:#6FBE59;--leaf-lo:#4C8F3B;--stem:#A88660;--sun:#FFD36B;
+  --leaf:#6FBE59;--leaf-lo:#4C8F3B;--stem:#A88660;--sun:#FFD36B;--danger:#F07075;
   --shadow:rgba(0,0,0,.4);--scrim:rgba(0,0,0,.6);color-scheme:dark}
 
-html,body{min-height:100%}
-body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:18px;
-  -webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;
+[hidden]{display:none!important}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:18px;overflow:hidden;
+  -webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
-.wrap{max-width:900px;margin:0 auto;padding-block:20px 40px;display:flex;flex-direction:column;gap:20px;align-items:center}
+.app{height:100%;max-width:960px;margin:0 auto;padding-block:14px 10px;display:flex;flex-direction:column;gap:12px;box-sizing:border-box}
 
-h1{font-family:var(--display);font-weight:400;font-size:clamp(40px,7vw,68px);margin:0;letter-spacing:.02em;
-  text-align:center;text-wrap:balance;color:var(--grape-lo);line-height:1.1}
-:root[data-theme="dark"] h1{color:var(--grape-hi)}
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) h1{color:var(--grape-hi)}}
+h1{font-family:var(--display);font-weight:400;font-size:clamp(34px,6vw,60px);margin:0;letter-spacing:.02em;
+  text-align:center;text-wrap:balance;color:var(--title);line-height:1.1}
 h1 .star{display:inline-block;color:var(--sun);animation:twinkle 2.4s ease-in-out infinite}
-.sub{font-size:20px;color:var(--soft);margin:-8px 0 0;text-align:center}
 
-.stats{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;width:100%}
-.stat{background:var(--card);border-radius:28px;padding:12px 22px;display:flex;align-items:center;gap:10px;
-  box-shadow:0 4px 0 var(--shadow);font-family:var(--display);font-size:22px;min-width:0}
-.stat b{font-weight:400;font-size:40px;font-variant-numeric:tabular-nums;line-height:1}
-.stat .dot{width:26px;height:26px;border-radius:50%;flex:none}
+.stats{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.stat{background:var(--card);border-radius:28px;padding:8px 18px;display:flex;align-items:center;gap:8px;
+  box-shadow:0 4px 0 var(--shadow);font-family:var(--display);font-size:20px}
+.stat b{font-weight:400;font-size:34px;font-variant-numeric:tabular-nums;line-height:1}
+.stat .dot{width:24px;height:24px;border-radius:50%;flex:none;box-sizing:border-box}
 .stat.have .dot{background:radial-gradient(circle at 35% 30%,var(--grape-hi),var(--grape) 55%,var(--grape-lo))}
 .stat.have b{color:var(--grape)}
 .stat.used .dot{background:var(--used);border:3px solid var(--used-ink)}
 .stat.all .dot{background:var(--sun)}
 
-.vine{background:var(--card);border-radius:44px;padding:24px 16px 36px;width:100%;box-shadow:0 8px 0 var(--shadow);
-  display:flex;flex-direction:column;align-items:center;gap:6px;position:relative}
-.vine-top{display:flex;align-items:flex-end;justify-content:center;height:70px}
-.vine-top svg{height:70px;width:auto}
-.bunch-no{position:absolute;top:22px;left:26px;font-family:var(--display);font-size:20px;color:var(--soft)}
+/* carousel */
+.slider{flex:1;min-height:0;display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;
+  overscroll-behavior-x:contain;scrollbar-width:none;margin-inline:-8px;-webkit-overflow-scrolling:touch}
+.slider::-webkit-scrollbar{display:none}
+.slide{flex:0 0 100%;scroll-snap-align:center;scroll-snap-stop:always;display:flex;padding:4px 8px 10px;box-sizing:border-box;min-width:0}
+.vine{flex:1;min-width:0;background:var(--card);border-radius:40px;box-shadow:0 8px 0 var(--shadow);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;position:relative;padding:12px}
+.vine.done{background:linear-gradient(var(--card),var(--card)) padding-box,repeating-linear-gradient(45deg,var(--sun) 0 14px,var(--grape-hi) 14px 28px) border-box;border:6px solid transparent}
+.label{position:absolute;top:14px;left:20px;font-family:var(--display);font-size:24px;color:var(--soft);display:flex;align-items:center;gap:8px}
+.label .no{display:grid;place-items:center;min-width:40px;height:40px;padding:0 8px;box-sizing:border-box;border-radius:20px;background:var(--grape);color:#fff;font-size:24px;font-variant-numeric:tabular-nums}
+.badge{position:absolute;top:14px;right:18px;font-family:var(--display);font-size:20px;background:var(--sun);color:#3B2A4A;border-radius:999px;padding:6px 14px}
+.vine-top svg{height:calc(var(--g)*0.62);width:auto;display:block}
 .bunch{display:flex;flex-direction:column;align-items:center;gap:calc(var(--g)*-0.08)}
 .row{display:flex;gap:calc(var(--g)*0.1);justify-content:center}
 
-.grape{width:var(--g);height:var(--g);border-radius:50%;border:0;padding:0;cursor:pointer;position:relative;
-  font-family:var(--display);font-size:calc(var(--g)*0.3);display:grid;place-items:center;
-  transition:transform .15s ease;touch-action:manipulation}
-.grape:active{transform:scale(.9)}
+.grape{width:var(--g);height:var(--g);border-radius:50%;border:0;padding:0;cursor:pointer;position:relative;box-sizing:border-box;
+  font-family:var(--display);font-size:calc(var(--g)*0.3);display:grid;place-items:center;color:inherit;
+  transition:transform .15s ease;touch-action:manipulation;-webkit-touch-callout:none}
+.grape:active{transform:scale(.92)}
+.grape.pressing{transform:scale(.78);transition:transform .55s ease-in}
 .grape:focus-visible{outline:4px solid var(--sun);outline-offset:3px}
 .grape.empty{background:var(--empty);border:4px dashed var(--empty-line);color:var(--empty-line)}
 .grape.on{background:radial-gradient(circle at 34% 28%,var(--grape-hi) 0 12%,var(--grape) 45%,var(--grape-lo) 100%);
   box-shadow:inset -6px -8px 0 rgba(0,0,0,.12),0 4px 0 var(--shadow);color:#fff}
-.grape.on .face{font-size:calc(var(--g)*0.34);line-height:1;text-shadow:0 2px 0 rgba(0,0,0,.15)}
+.grape .face{pointer-events:none;line-height:1}
+.grape.on .face{font-size:calc(var(--g)*0.32);text-shadow:0 2px 0 rgba(0,0,0,.15)}
 .grape.used{background:var(--used);color:var(--used-ink);border:4px solid var(--used-ink)}
-.grape.used .face{font-size:calc(var(--g)*0.24)}
+.grape.used .face{font-size:calc(var(--g)*0.3)}
 .grape.pop{animation:pop .5s cubic-bezier(.3,1.6,.5,1)}
 
-.hint{font-size:20px;color:var(--soft);text-align:center;line-height:1.6;max-width:36em}
-.hint span{white-space:nowrap}
-.tools{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
-.btn{font-family:var(--display);font-size:22px;border:0;border-radius:999px;padding:14px 26px;cursor:pointer;
-  background:var(--empty);color:var(--ink);box-shadow:0 4px 0 var(--shadow);touch-action:manipulation}
-.btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--shadow)}
-.btn.main{background:var(--leaf);color:#fff;font-size:26px;padding:18px 34px}
-.status{font-size:15px;color:var(--soft);text-align:center;min-height:1.2em}
+.pager{display:flex;gap:10px;justify-content:center;overflow-x:auto;scrollbar-width:none;padding:4px 2px 6px;flex:none}
+.pager::-webkit-scrollbar{display:none}
+.pg{flex:none;min-width:52px;height:52px;border-radius:26px;border:0;font-family:var(--display);font-size:24px;cursor:pointer;
+  background:var(--card);color:var(--soft);box-shadow:0 3px 0 var(--shadow);font-variant-numeric:tabular-nums;touch-action:manipulation}
+.pg.done{background:var(--empty);color:var(--grape)}
+.pg.cur{background:var(--grape);color:#fff;transform:scale(1.08)}
+.foot{display:flex;justify-content:center;gap:16px;flex-wrap:wrap;font-size:15px;color:var(--soft);text-align:center;flex:none}
 
 /* sheet */
 .scrim{position:fixed;inset:0;background:var(--scrim);display:grid;place-items:center;z-index:20;
   padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
 .sheet{background:var(--card);border-radius:40px;padding:28px 24px;width:min(640px,100%);display:flex;flex-direction:column;gap:20px;
-  animation:rise .25s ease-out;max-height:100%;overflow:auto}
-.sheet h2{font-family:var(--display);font-weight:400;font-size:clamp(28px,5vw,40px);margin:0;text-align:center}
+  animation:rise .25s ease-out;max-height:100%;overflow:auto;box-sizing:border-box}
+.sheet h2{font-family:var(--display);font-weight:400;font-size:clamp(28px,5vw,40px);margin:0;text-align:center;text-wrap:balance}
 .choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.choices.one{grid-template-columns:minmax(0,1fr)}
 .choice{font-family:var(--display);font-size:clamp(22px,3.6vw,28px);border:0;border-radius:28px;padding:18px 10px;min-height:120px;
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;cursor:pointer;
   background:var(--empty);color:var(--ink);box-shadow:0 5px 0 var(--shadow);touch-action:manipulation}
 .choice .ic{font-size:48px;line-height:1}
 .choice:active{transform:translateY(4px);box-shadow:0 1px 0 var(--shadow)}
 .choice.go{background:var(--grape);color:#fff}
-.cancel{align-self:center}
+.choice.del{background:var(--danger);color:#fff}
+.btn{font-family:var(--display);font-size:22px;border:0;border-radius:999px;padding:14px 30px;cursor:pointer;align-self:center;
+  background:var(--empty);color:var(--ink);box-shadow:0 4px 0 var(--shadow);touch-action:manipulation}
 
 .burst{position:fixed;pointer-events:none;z-index:30;font-family:var(--display);font-size:44px;color:var(--grape);
   animation:float 1.1s ease-out forwards;text-shadow:0 3px 0 var(--card)}
 .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:25;
-  background:var(--ink);color:var(--bg);font-family:var(--display);font-size:22px;padding:14px 18px 14px 26px;border-radius:999px;
-  display:flex;align-items:center;gap:14px;box-shadow:0 6px 20px var(--shadow);max-width:calc(100% - 32px)}
-.toast button{font-family:var(--display);font-size:20px;border:0;border-radius:999px;padding:10px 18px;background:var(--sun);color:#3B2A4A;cursor:pointer}
+  background:var(--ink);color:var(--bg);font-family:var(--display);font-size:22px;padding:14px 26px;border-radius:999px;
+  box-shadow:0 6px 20px var(--shadow);max-width:calc(100% - 32px);text-align:center;pointer-events:none}
 
 @keyframes pop{0%{transform:scale(.4)}100%{transform:scale(1)}}
 @keyframes rise{from{transform:translateY(30px);opacity:.4}to{transform:none;opacity:1}}
 @keyframes float{0%{transform:translate(-50%,-50%) scale(.6);opacity:1}100%{transform:translate(-50%,-160%) scale(1.3);opacity:0}}
 @keyframes twinkle{0%,100%{transform:rotate(-8deg) scale(1)}50%{transform:rotate(8deg) scale(1.15)}}
 @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
-@media (max-width:520px){.choice{min-height:96px}.choice .ic{font-size:38px}.stat b{font-size:32px}.stat{font-size:18px;padding:10px 16px}}
+@media (max-width:520px){.choice{min-height:96px}.choice .ic{font-size:38px}.stat b{font-size:26px}.stat{font-size:16px;padding:8px 12px}
+  .label{font-size:18px;top:10px;left:14px}.label .no{min-width:32px;height:32px;font-size:20px}.badge{font-size:16px;top:10px;right:12px}}
 </style>
 
-<div class="wrap">
+<div class="app">
   <h1><span class="star">★</span> 하루 칭찬 포인트 <span class="star">★</span></h1>
-  <p class="sub">착한 일을 하면 포도알을 하나 채워요!</p>
 
   <div class="stats" aria-live="polite">
     <div class="stat have"><span class="dot"></span>쓸 수 있어요 <b id="nHave">0</b></div>
     <div class="stat used"><span class="dot"></span>썼어요 <b id="nUsed">0</b></div>
-    <div class="stat all"><span class="dot"></span>모두 모은 칭찬 <b id="nAll">0</b></div>
+    <div class="stat all"><span class="dot"></span>모은 칭찬 <b id="nAll">0</b></div>
   </div>
 
-  <div class="vine">
-    <div class="bunch-no" id="bunchNo">포도송이 1</div>
-    <div class="vine-top" aria-hidden="true">
-      <svg viewBox="0 0 160 70">
-        <path d="M80 70 C80 50 84 36 92 22" stroke="var(--stem)" stroke-width="9" fill="none" stroke-linecap="round"/>
-        <path d="M92 24 C70 2 40 6 30 26 C52 36 76 36 92 24Z" fill="var(--leaf)"/>
-        <path d="M92 24 C64 22 48 22 34 25" stroke="var(--leaf-lo)" stroke-width="3" fill="none" stroke-linecap="round"/>
-        <path d="M92 22 C108 2 136 4 142 22 C126 34 106 32 92 22Z" fill="var(--leaf)"/>
-        <path d="M94 22 C114 18 126 19 138 22" stroke="var(--leaf-lo)" stroke-width="3" fill="none" stroke-linecap="round"/>
-        <path d="M96 30 c10 4 14 12 8 18 c-6 6 -14 0 -8 -6" stroke="var(--leaf)" stroke-width="4" fill="none" stroke-linecap="round"/>
-      </svg>
-    </div>
-    <div class="bunch" id="bunch"></div>
-  </div>
-
-  <p class="hint"><span>빈 포도알을 누르면 칭찬 포인트 +1!</span> <span>보라색 포도알을 누르면 포인트를 써요.</span></p>
-  <div class="tools">
-    <button class="btn main" id="newBunch" hidden>🍇 새 포도송이 시작</button>
-  </div>
-  <div class="status" id="status">불러오는 중…</div>
+  <div class="slider" id="slider" aria-label="포도송이들"></div>
+  <div class="pager" id="pager" aria-label="포도송이 번호"></div>
+  <div class="foot"><span>빈 포도알 누르기 = 칭찬 +1 · 보라 포도알 누르기 = 포인트 쓰기 · 꾹 누르기 = 지우기</span><span id="status"></span></div>
 </div>
 
 <div class="scrim" id="scrim" hidden>
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
     <h2 id="sheetTitle"></h2>
     <div class="choices" id="choices"></div>
-    <button class="btn cancel" id="cancel">취소</button>
+    <button class="btn" id="cancel">취소</button>
   </div>
 </div>
 
@@ -179,57 +172,128 @@ h1 .star{display:inline-block;color:var(--sun);animation:twinkle 2.4s ease-in-ou
     {k:"treat",ic:"🍭",t:"간식 먹기"},
     {k:"etc",ic:"🎁",t:"다른 데 쓰기"}];
   const FACES=["◕‿◕","^‿^","•ᴗ•","◠‿◠"];
-  const LS="haru-point-v1";
+  const LS="haru-point-v2", LS_OLD="haru-point-v1";
+  const SVG_TOP='<svg viewBox="0 0 160 70" aria-hidden="true"><path d="M80 70 C80 50 84 36 92 22" stroke="var(--stem)" stroke-width="9" fill="none" stroke-linecap="round"/><path d="M92 24 C70 2 40 6 30 26 C52 36 76 36 92 24Z" fill="var(--leaf)"/><path d="M92 24 C64 22 48 22 34 25" stroke="var(--leaf-lo)" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M92 22 C108 2 136 4 142 22 C126 34 106 32 92 22Z" fill="var(--leaf)"/><path d="M94 22 C114 18 126 19 138 22" stroke="var(--leaf-lo)" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M96 30 c10 4 14 12 8 18 c-6 6 -14 0 -8 -6" stroke="var(--leaf)" stroke-width="4" fill="none" stroke-linecap="round"/></svg>';
 
-  const blank=()=>({cells:Array.from({length:TOTAL},()=>({s:0})),bunch:1,lifetime:0});
-  let state=load()||blank();
-  let db=null, ref=null, prev=null, toastTimer=null;
   const $=id=>document.getElementById(id);
-
-  function load(){try{const v=JSON.parse(localStorage.getItem(LS));return valid(v)?v:null}catch(e){return null}}
-  function cache(){try{localStorage.setItem(LS,JSON.stringify(state))}catch(e){}}
-  function valid(v){return v&&Array.isArray(v.cells)&&v.cells.length===TOTAL}
   const clone=o=>JSON.parse(JSON.stringify(o));
+  const newBunch=()=>({cells:Array.from({length:TOTAL},()=>({s:0}))});
+  const isFull=b=>b.cells.every(c=>c.s!==0);
 
-  function render(popIdx){
-    const b=$("bunch");b.textContent="";
-    let i=0;
-    ROWS.forEach(n=>{
-      const row=document.createElement("div");row.className="row";
-      for(let j=0;j<n;j++,i++){
-        const c=state.cells[i], idx=i;
-        const el=document.createElement("button");
-        el.className="grape "+(c.s===1?"on":c.s===2?"used":"empty");
-        if(idx===popIdx) el.classList.add("pop");
-        const face=document.createElement("span");face.className="face";
-        if(c.s===1){face.textContent=FACES[idx%FACES.length];el.setAttribute("aria-label",(idx+1)+"번 포도알: 칭찬 포인트 있음")}
-        else if(c.s===2){face.textContent="✓";el.setAttribute("aria-label",(idx+1)+"번 포도알: 사용함")}
-        else{face.textContent="+";el.setAttribute("aria-label",(idx+1)+"번 포도알: 비어 있음")}
-        el.appendChild(face);
-        el.addEventListener("click",()=>tap(idx,el));
-        row.appendChild(el);
-      }
-      b.appendChild(row);
+  function normalize(v){
+    if(!v)return null;
+    if(Array.isArray(v.bunches)&&v.bunches.length&&v.bunches.every(b=>Array.isArray(b.cells)&&b.cells.length===TOTAL))
+      return {bunches:v.bunches,lifetime:v.lifetime||0};
+    if(Array.isArray(v.cells)&&v.cells.length===TOTAL) return {bunches:[{cells:v.cells}],lifetime:v.lifetime||0}; // v1 format
+    return null;
+  }
+  function load(){
+    for(const k of [LS,LS_OLD]){try{const v=normalize(JSON.parse(localStorage.getItem(k)));if(v)return v}catch(e){}}
+    return null;
+  }
+  function cache(){try{localStorage.setItem(LS,JSON.stringify(state))}catch(e){}}
+
+  let state=load()||{bunches:[newBunch()],lifetime:0};
+  let ref=null, toastTimer=null, cur=state.bunches.length-1;
+  const slider=$("slider"), pager=$("pager");
+
+  /* ---------- sizing: one bunch fits the screen ---------- */
+  function fit(){
+    const w=slider.clientWidth-16-24, h=slider.clientHeight-14-24;
+    const g=Math.max(34,Math.min(w/6.6,(h-56)/7.3,112));
+    document.documentElement.style.setProperty("--g",g.toFixed(1)+"px");
+  }
+  new ResizeObserver(()=>{fit();goTo(cur,false)}).observe(slider);
+
+  /* ---------- render ---------- */
+  function render(pop){
+    const nb=state.bunches.length;
+    while(slider.children.length<nb){const s=document.createElement("div");s.className="slide";slider.appendChild(s)}
+    while(slider.children.length>nb)slider.lastChild.remove();
+    state.bunches.forEach((b,bi)=>{
+      const slide=slider.children[bi];
+      const full=isFull(b);
+      const vine=document.createElement("div");vine.className="vine"+(full?" done":"");
+      const label=document.createElement("div");label.className="label";
+      const no=document.createElement("span");no.className="no";no.textContent=bi+1;
+      label.append(no,"번째 포도송이");vine.appendChild(label);
+      if(full){const bd=document.createElement("div");bd.className="badge";bd.textContent="다 채웠어요! 🎉";vine.appendChild(bd)}
+      const top=document.createElement("div");top.className="vine-top";top.innerHTML=SVG_TOP;vine.appendChild(top);
+      const bunch=document.createElement("div");bunch.className="bunch";
+      let i=0;
+      ROWS.forEach(n=>{
+        const row=document.createElement("div");row.className="row";
+        for(let j=0;j<n;j++,i++)row.appendChild(grapeEl(bi,i,pop&&pop[0]===bi&&pop[1]===i));
+        bunch.appendChild(row);
+      });
+      vine.appendChild(bunch);
+      slide.replaceChildren(vine);
+      slide.setAttribute("aria-label",(bi+1)+"번째 포도송이");
     });
-    const have=state.cells.filter(c=>c.s===1).length, used=state.cells.filter(c=>c.s===2).length;
-    $("nHave").textContent=have;$("nUsed").textContent=used;$("nAll").textContent=state.lifetime||0;
-    $("bunchNo").textContent="포도송이 "+(state.bunch||1);
-    $("newBunch").hidden=state.cells.some(c=>c.s===0);
+    // pager
+    pager.textContent="";
+    state.bunches.forEach((b,bi)=>{
+      const p=document.createElement("button");p.className="pg"+(isFull(b)?" done":"")+(bi===cur?" cur":"");
+      p.textContent=bi+1;p.setAttribute("aria-label",(bi+1)+"번째 포도송이로 가기");
+      p.addEventListener("click",()=>goTo(bi,true));pager.appendChild(p);
+    });
+    // totals
+    let have=0,used=0;state.bunches.forEach(b=>b.cells.forEach(c=>{if(c.s===1)have++;else if(c.s===2)used++}));
+    $("nHave").textContent=have;$("nUsed").textContent=used;$("nAll").textContent=have+used;
   }
 
-  function tap(idx,el){
-    const c=state.cells[idx];
-    if(c.s===0) ask("어떤 착한 일을 했나요?",DEEDS,false,k=>change(()=>{state.cells[idx]={s:1,d:k,at:Date.now()};state.lifetime=(state.lifetime||0)+1},idx,el,"+1","칭찬 포인트 +1! 잘했어요!"));
-    else if(c.s===1) ask("칭찬 포인트를 어디에 쓸까요?",USES,true,k=>change(()=>{state.cells[idx]=Object.assign({},c,{s:2,u:k,usedAt:Date.now()})},idx,el,"✓","포인트 1개를 썼어요"));
+  function grapeEl(bi,i,pop){
+    const c=state.bunches[bi].cells[i];
+    const el=document.createElement("button");
+    el.className="grape "+(c.s===1?"on":c.s===2?"used":"empty")+(pop?" pop":"");
+    const face=document.createElement("span");face.className="face";
+    face.textContent=c.s===1?FACES[i%FACES.length]:c.s===2?"✓":"+";
+    el.setAttribute("aria-label",(i+1)+"번 포도알: "+(c.s===1?"칭찬 포인트 있음":c.s===2?"사용함":"비어 있음"));
+    el.appendChild(face);
+    bindPress(el,()=>tap(bi,i,el),()=>longPress(bi,i));
+    return el;
+  }
+
+  /* ---------- tap vs long press ---------- */
+  function bindPress(el,onTap,onLong){
+    let timer=null,fired=false,x=0,y=0;
+    const clear=()=>{clearTimeout(timer);timer=null;el.classList.remove("pressing")};
+    el.addEventListener("pointerdown",e=>{
+      fired=false;x=e.clientX;y=e.clientY;
+      if(el.classList.contains("empty"))return;
+      el.classList.add("pressing");
+      timer=setTimeout(()=>{fired=true;clear();if(navigator.vibrate)try{navigator.vibrate(30)}catch(_){};onLong()},600);
+    });
+    el.addEventListener("pointermove",e=>{if(timer&&Math.hypot(e.clientX-x,e.clientY-y)>10)clear()});
+    ["pointerup","pointercancel","pointerleave"].forEach(t=>el.addEventListener(t,clear));
+    el.addEventListener("contextmenu",e=>e.preventDefault());
+    el.addEventListener("click",e=>{if(fired){fired=false;e.preventDefault();return}onTap()});
+  }
+
+  function tap(bi,i,el){
+    const c=state.bunches[bi].cells[i];
+    if(c.s===0) ask("어떤 착한 일을 했나요?",DEEDS,"",k=>change(()=>{state.bunches[bi].cells[i]={s:1,d:k,at:Date.now()}},[bi,i],el,"+1","칭찬 포인트 +1! 잘했어요!"));
+    else if(c.s===1) ask("칭찬 포인트를 어디에 쓸까요?",USES,"go",k=>change(()=>{state.bunches[bi].cells[i]=Object.assign({},c,{s:2,u:k,usedAt:Date.now()})},[bi,i],el,"✓","포인트 1개를 썼어요"));
     else {const d=DEEDS.find(x=>x.k===c.d),u=USES.find(x=>x.k===c.u);
-      showToast((d?d.ic+" "+d.t:"칭찬")+" → "+(u?u.ic+" "+u.t:"사용 완료"),false)}
+      showToast((d?d.ic+" "+d.t:"칭찬")+" → "+(u?u.ic+" "+u.t:"사용 완료"))}
   }
 
-  function ask(title,opts,go,done){
+  function longPress(bi,i){
+    const c=state.bunches[bi].cells[i];
+    if(c.s===0)return;
+    const opts=[{k:"del",ic:"🗑️",t:"포도알 지우기",cls:"del"}];
+    if(c.s===2)opts.unshift({k:"unuse",ic:"↩️",t:"안 쓴 걸로 하기"});
+    ask("잘못 눌렀나요?",opts,"",k=>{
+      if(k==="del")change(()=>{state.bunches[bi].cells[i]={s:0}},null,null,null,"포도알을 지웠어요");
+      else change(()=>{const n=Object.assign({},c,{s:1});delete n.u;delete n.usedAt;state.bunches[bi].cells[i]=n},[bi,i],null,null,"다시 쓸 수 있는 포인트가 됐어요");
+    },opts.length===1);
+  }
+
+  function ask(title,opts,cls,done,single){
     $("sheetTitle").textContent=title;
-    const box=$("choices");box.textContent="";
+    const box=$("choices");box.textContent="";box.classList.toggle("one",!!single);
     opts.forEach(o=>{
-      const b=document.createElement("button");b.className="choice"+(go?" go":"");
+      const b=document.createElement("button");b.className="choice "+(o.cls||cls||"");
       const ic=document.createElement("span");ic.className="ic";ic.textContent=o.ic;
       const t=document.createElement("span");t.textContent=o.t;
       b.append(ic,t);
@@ -242,56 +306,73 @@ h1 .star{display:inline-block;color:var(--sun);animation:twinkle 2.4s ease-in-ou
   $("cancel").addEventListener("click",close);
   $("scrim").addEventListener("click",e=>{if(e.target.id==="scrim")close()});
 
-  function change(fn,idx,el,burstText,msg){
-    prev=clone(state);fn();cache();render(idx);
-    if(el){const r=el.getBoundingClientRect();const s=document.createElement("div");s.className="burst";s.textContent=burstText;
+  function change(fn,pop,el,burstText,msg){
+    fn();
+    // a bunch with no empty grapes left gets a fresh one after it
+    let grew=false;
+    if(isFull(state.bunches[state.bunches.length-1])){state.bunches.push(newBunch());grew=true}
+    state.lifetime=state.bunches.reduce((n,b)=>n+b.cells.filter(c=>c.s!==0).length,0);
+    cache();render(pop);
+    if(el&&burstText){const r=el.getBoundingClientRect();const s=document.createElement("div");s.className="burst";s.textContent=burstText;
       s.style.left=(r.left+r.width/2)+"px";s.style.top=(r.top+r.height/2)+"px";document.body.appendChild(s);setTimeout(()=>s.remove(),1200)}
-    save();showToast(msg,true);
+    save();
+    if(grew){showToast("포도송이를 다 채웠어요! 🎉 새 포도송이로 가요");setTimeout(()=>goTo(state.bunches.length-1,true),1600)}
+    else showToast(msg);
   }
 
-  $("newBunch").addEventListener("click",()=>{
-    prev=clone(state);
-    // carry unused points over to the new bunch
-    const keep=state.cells.filter(c=>c.s===1);
-    const nb=blank();nb.bunch=(state.bunch||1)+1;nb.lifetime=state.lifetime||0;
-    keep.forEach((c,i)=>{nb.cells[i]=c});
-    state=nb;cache();render();save();showToast("새 포도송이를 시작해요! 🍇",true);
-  });
+  /* ---------- carousel position ---------- */
+  function goTo(bi,smooth){
+    cur=Math.max(0,Math.min(bi,state.bunches.length-1));
+    slider.scrollTo({left:cur*slider.clientWidth,behavior:smooth?"smooth":"auto"});
+    markPager();
+  }
+  function markPager(){
+    [...pager.children].forEach((p,i)=>p.classList.toggle("cur",i===cur));
+    const p=pager.children[cur];if(p)p.scrollIntoView({block:"nearest",inline:"center",behavior:"smooth"});
+  }
+  let st=null;
+  slider.addEventListener("scroll",()=>{clearTimeout(st);st=setTimeout(()=>{
+    const n=Math.round(slider.scrollLeft/slider.clientWidth);if(n!==cur){cur=n;markPager()}},80)},{passive:true});
 
-  function showToast(msg,undo){
+  function showToast(msg){
     document.querySelectorAll(".toast").forEach(t=>t.remove());clearTimeout(toastTimer);
-    const t=document.createElement("div");t.className="toast";
-    const s=document.createElement("span");s.textContent=msg;t.appendChild(s);
-    if(undo&&prev){const b=document.createElement("button");b.textContent="되돌리기";
-      b.addEventListener("click",()=>{state=prev;prev=null;cache();render();save();t.remove()});t.appendChild(b)}
-    document.body.appendChild(t);toastTimer=setTimeout(()=>t.remove(),5000);
+    const t=document.createElement("div");t.className="toast";t.textContent=msg;
+    document.body.appendChild(t);toastTimer=setTimeout(()=>t.remove(),2600);
   }
 
+  /* ---------- saving: always on this device; also synced when signed in ---------- */
   let saving=false,again=false;
   async function save(){
     if(!ref)return;
     if(saving){again=true;return}
     saving=true;
-    try{await ref.set(clone(state));$("status").textContent="저장했어요 · 다른 기기에서도 같이 보여요"}
-    catch(e){$("status").textContent="저장하지 못했어요. 인터넷 연결을 확인해 주세요. (이 기기에는 남아 있어요)"}
+    try{await ref.set(clone(state));$("status").textContent="저장됨 · 다른 기기와 같이 보여요"}
+    catch(e){$("status").textContent="이 아이패드에 저장됨"}
     saving=false;if(again){again=false;save()}
   }
 
-  render();
-  $("status").textContent="이 기기에 저장돼요";
+  fit();render();goTo(cur,false);
+  $("status").textContent="이 아이패드에 저장됨";
 
   (async()=>{
-    try{db=window.claude&&await window.claude.use("db")}catch(e){db=null}
-    if(!db){$("status").textContent="이 기기에 저장돼요 (claude.ai에 로그인하면 다른 기기와 함께 써요)";return}
+    let db=null;
+    try{db=window.claude&&typeof window.claude.use==="function"?await window.claude.use("db"):null}catch(e){db=null}
+    if(!db)return;                       // not signed in: keep using this device's storage
     ref=db.doc("haru/board");
     let first=true;
-    const timer=setTimeout(()=>{$("status").textContent="저장소에 아직 연결 중이에요…"},10000);
     ref.onSnapshot(snap=>{
-      if(!snap.metadata.fromCache)clearTimeout(timer);
-      if(snap.exists){const d=snap.data();if(valid(d)&&!snap.metadata.hasPendingWrites){state=clone(d);cache();render()}}
-      else if(first&&!snap.metadata.fromCache){save()}   // first visit: store what this device has
-      if(!snap.metadata.fromCache){first=false;$("status").textContent="저장됨 · 다른 기기에서도 같이 보여요"}
-    },err=>{clearTimeout(timer);$("status").textContent="저장소에 연결하지 못했어요. 이 기기에만 저장돼요."});
+      if(snap.metadata.fromCache)return;
+      if(snap.exists){
+        const d=normalize(snap.data());
+        if(d&&!snap.metadata.hasPendingWrites){
+          const atEnd=cur===state.bunches.length-1;
+          state=clone(d);cache();render();
+          if(first||atEnd)goTo(state.bunches.length-1,false);
+        }
+      } else if(first) save();          // first sync: upload what this device has
+      first=false;
+      $("status").textContent="저장됨 · 다른 기기와 같이 보여요";
+    },()=>{ref=null;$("status").textContent="이 아이패드에 저장됨"});
   })();
 })();
 </script>
