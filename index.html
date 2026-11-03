@@ -29,6 +29,9 @@
   --pink:#FF79A8;
   --danger:#E0565B;
   --bee-ink:#4A3426;
+  --leaf-hi:#9AD27A;
+  --leaf-back:#4A8A3A;
+  --bug:#E8473F;
   --shadow:rgba(80,40,120,.18);
   --scrim:rgba(40,25,55,.45);
   --display:"Jua","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
@@ -40,14 +43,14 @@
   --grape:#A56BE0;--grape-hi:#DABDF7;--grape-lo:#6B36A3;
   --unripe:#43375A;--unripe-hi:#5E4F78;--unripe-lo:#322845;
   --used:#3E3748;--used-lo:#2F2938;--used-ink:#8D8299;
-  --leaf:#6FBE59;--leaf-lo:#4C8F3B;--stem:#A88660;--sun:#FFD36B;--tangerine:#FFA866;--pink:#FF8DB6;--danger:#F07075;
+  --leaf:#6FBE59;--leaf-lo:#4C8F3B;--leaf-hi:#8FCB6E;--leaf-back:#36682C;--bug:#F0605A;--stem:#A88660;--sun:#FFD36B;--tangerine:#FFA866;--pink:#FF8DB6;--danger:#F07075;
   --shadow:rgba(0,0,0,.4);--scrim:rgba(0,0,0,.6);color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#1C1824;--card:#2A2334;--ink:#F3EAFB;--soft:#B9A9C9;
   --grape:#A56BE0;--grape-hi:#DABDF7;--grape-lo:#6B36A3;
   --unripe:#43375A;--unripe-hi:#5E4F78;--unripe-lo:#322845;
   --used:#3E3748;--used-lo:#2F2938;--used-ink:#8D8299;
-  --leaf:#6FBE59;--leaf-lo:#4C8F3B;--stem:#A88660;--sun:#FFD36B;--tangerine:#FFA866;--pink:#FF8DB6;--danger:#F07075;
+  --leaf:#6FBE59;--leaf-lo:#4C8F3B;--leaf-hi:#8FCB6E;--leaf-back:#36682C;--bug:#F0605A;--stem:#A88660;--sun:#FFD36B;--tangerine:#FFA866;--pink:#FF8DB6;--danger:#F07075;
   --shadow:rgba(0,0,0,.4);--scrim:rgba(0,0,0,.6);color-scheme:dark}
 
 [hidden]{display:none!important}
@@ -56,7 +59,7 @@ body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:18p
   background-image:radial-gradient(circle at 12% 8%,color-mix(in srgb,var(--leaf) 14%,transparent) 0 120px,transparent 121px);
   -webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;
   padding-left:max(40px,calc(env(safe-area-inset-left,0px) + 24px));padding-right:max(40px,calc(env(safe-area-inset-right,0px) + 24px))}
-.app{position:relative;z-index:1;height:100%;max-width:1100px;margin:0 auto;padding-block:12px 46px;box-sizing:border-box;
+.app{position:relative;z-index:1;height:100%;max-width:1100px;margin:0 auto;padding-block:12px 76px;box-sizing:border-box;
   display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto minmax(0,1fr) auto auto;gap:10px;
   grid-template-areas:"hero" "stats" "slider" "pager" "foot"}
 
@@ -150,17 +153,30 @@ body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:18p
   .stats{flex-direction:column;align-items:stretch}
   .stat{justify-content:space-between}
   .pager{flex-wrap:wrap}
+  .foot span:not(#status){display:none}
   .foot{flex-direction:column;font-size:14px}
 }
 
 /* ---------- border vines ---------- */
 .vines{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
-.vines .vs{fill:none;stroke:var(--leaf-lo);stroke-width:5;stroke-linecap:round;stroke-linejoin:round}
-.vines .lf{fill:var(--leaf)}
-.vines .vn{fill:none;stroke:var(--leaf-lo);stroke-width:1.6;stroke-linecap:round}
-.vines .tw{fill:none;stroke:var(--leaf);stroke-width:2.6;stroke-linecap:round}
-.vines .gp{fill:var(--grape)}
-.vines .gh{fill:var(--grape-hi)}
+.vines .wood-fill{fill:var(--stem)}
+.vines .wood{fill:none;stroke:var(--stem);stroke-linecap:round}
+.vines .shoot{fill:var(--leaf-lo)}
+.vines .front{fill:url(#vgLeaf)}
+.vines .back{fill:var(--leaf-back)}
+.vines .vn{fill:none;stroke:var(--leaf-lo);stroke-width:1.5;stroke-linecap:round;opacity:.75}
+.vines .back .vn{opacity:.4}
+.vines .tw{fill:none;stroke:var(--leaf);stroke-width:2.4;stroke-linecap:round}
+.vines .gh{fill:rgba(255,255,255,.7)}
+.vines .bug{fill:var(--bug)}
+.vines .bugink{fill:var(--bee-ink)}
+.vines .bugline{fill:none;stroke:var(--bee-ink);stroke-width:1.2}
+.vines .eye-w{fill:#fff}
+.vines .grow{animation:grow .8s cubic-bezier(.3,1.5,.5,1) both}
+.vines.settled .grow{animation:none}
+.vines .sway{animation:sway 4s ease-in-out infinite alternate}
+@keyframes grow{from{transform:scale(0)}to{transform:scale(1)}}
+@keyframes sway{from{transform:rotate(-4deg)}to{transform:rotate(4deg)}}
 
 /* ---------- bee ---------- */
 .bee{position:fixed;left:0;top:0;width:92px;height:82px;z-index:15;pointer-events:none;will-change:transform}
@@ -474,29 +490,118 @@ body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:18p
     saving=false;if(again){again=false;save()}
   }
 
-  /* ---------- vines along the left, bottom and right edges ---------- */
-  const rnd=k=>{const x=Math.sin(k*12.9898)*43758.5453;return x-Math.floor(x)};
-  function drawVines(){
-    const W=innerWidth,H=innerHeight,m=12,svg=$("vines");
-    svg.setAttribute("viewBox","0 0 "+W+" "+H);
-    const segs=[[H-m,s=>[m,s],[1,0]],[W-2*m,s=>[m+s,H-m],[0,-1]],[H-m,s=>[W-m,H-m-s],[-1,0]]];
-    const total=segs.reduce((a,s)=>a+s[0],0);
-    const at=s=>{let o=s;for(const [len,f,n] of segs){if(o<=len){const [x,y]=f(o),w=Math.sin(s/38)*6;return {x:x+n[0]*w,y:y+n[1]*w,n}}o-=len}const l=segs[2];const [x,y]=l[1](l[0]);return {x,y,n:l[2]}};
-    let d="";for(let s=0;s<=total;s+=6){const p=at(s);d+=(s?"L":"M")+p.x.toFixed(1)+" "+p.y.toFixed(1)}
-    let out='<path class="vs" d="'+d+'"/>';
-    let k=0;
-    for(let s=30;s<total-10;s+=58,k++){
-      const p=at(s),a=Math.atan2(p.n[1],p.n[0])*180/Math.PI,side=k%2?1:-1,sc=0.9+rnd(k)*0.5;
-      out+='<g transform="translate('+p.x.toFixed(1)+' '+p.y.toFixed(1)+') rotate('+(a+side*48).toFixed(1)+') scale('+sc.toFixed(2)+')"><path class="lf" d="M0 0 C6 -11 22 -12 32 0 C22 12 6 11 0 0Z"/><path class="vn" d="M3 0 L27 0"/></g>';
-      if(k%5===2) out+='<g transform="translate('+p.x.toFixed(1)+' '+p.y.toFixed(1)+') rotate('+(a-side*30).toFixed(1)+')"><path class="tw" d="M0 0 C10 -2 18 6 13 13 C9 18 1 15 4 9 C6 6 10 7 10 10"/></g>';
-      if(k%7===4){const t=[-p.n[1],p.n[0]];
-        [[14,-6],[14,6],[24,0],[24,-11],[24,11],[33,-5],[33,5],[41,0]].forEach(([u,v])=>{
-          const cx=p.x+p.n[0]*u+t[0]*v,cy=p.y+p.n[1]*u+t[1]*v;
-          out+='<circle class="gp" cx="'+cx.toFixed(1)+'" cy="'+cy.toFixed(1)+'" r="6.2"/><circle class="gh" cx="'+(cx-2).toFixed(1)+'" cy="'+(cy-2).toFixed(1)+'" r="1.8"/>'})}
+  /* ---------- storybook vines along the left, bottom and right edges ---------- */
+  const rnd=k=>{const x=Math.sin(k*12.9898+78.233)*43758.5453;return x-Math.floor(x)};
+  const f1=n=>n.toFixed(1);
+  // grape leaf: petiole at 0,0, blade points up, five rounded lobes, small teeth, heart-shaped notch
+  function leafD(R){
+    const cy=-R*0.95;let d="M0 "+f1(-R*0.3);
+    for(let i=0;i<=150;i++){
+      const ph=-Math.PI+0.42+(2*Math.PI-0.84)*i/150;
+      const lobe=0.64+0.36*Math.pow((1+Math.cos(5*ph))/2,0.7);
+      const teeth=1+0.035*Math.cos(35*ph);
+      const notch=Math.abs(ph)>2.3?1-(Math.abs(ph)-2.3)*0.55:1;
+      const r=R*lobe*teeth*notch;
+      d+="L"+f1(Math.sin(ph)*r)+" "+f1(cy-Math.cos(ph)*r);
     }
-    svg.innerHTML=out;
+    return d+"Z";
+  }
+  function veinD(R){
+    const cy=-R*0.95,o=-R*0.3;let d="M0 0L0 "+f1(o);
+    [0,1.25,-1.25,2.35,-2.35].forEach(ph=>{const r=R*(Math.abs(ph)>2?0.55:0.8);
+      d+="M0 "+f1(o)+"Q"+f1(Math.sin(ph)*r*0.35)+" "+f1(cy-Math.cos(ph)*r*0.35)+" "+f1(Math.sin(ph)*r)+" "+f1(cy-Math.cos(ph)*r)});
+    return d;
+  }
+  function tendrilD(){
+    let d="M0 0Q-2 -9 5 -13";const cx=12,cy=-13;
+    for(let i=0;i<=44;i++){const t=i/44,a=Math.PI+t*Math.PI*3.3,r=7*(1-t)+1.2;d+="L"+f1(cx+Math.cos(a)*r)+" "+f1(cy+Math.sin(a)*r)}
+    return d;
+  }
+  function clusterSVG(){
+    let s='<path style="fill:var(--leaf)" transform="rotate(-70) scale(.5)" d="'+leafD(20)+'"/><path style="fill:none;stroke:var(--stem);stroke-width:2.6;stroke-linecap:round" d="M0 -3Q3 3 0 9"/>';
+    let y=13;[4,3,3,2,1].forEach(n=>{for(let j=0;j<n;j++){const x=(j-(n-1)/2)*10.6+(n%2?0:0.5);
+      s+='<circle cx="'+f1(x)+'" cy="'+f1(y)+'" r="6.3" fill="url(#vgGrape)"/><circle style="fill:rgba(255,255,255,.7)" cx="'+f1(x-2)+'" cy="'+f1(y-2.4)+'" r="1.7"/>'}y+=9.2});
+    return s;
+  }
+  const DEFS='<defs>'+
+    '<linearGradient id="vgLeaf" x1="0" y1="1" x2=".35" y2="0"><stop offset="0" style="stop-color:var(--leaf)"/><stop offset="1" style="stop-color:var(--leaf-hi)"/></linearGradient>'+
+    '<radialGradient id="vgGrape" cx=".38" cy=".32" r=".7"><stop offset="0" style="stop-color:var(--grape-hi)"/><stop offset=".5" style="stop-color:var(--grape)"/><stop offset="1" style="stop-color:var(--grape-lo)"/></radialGradient>'+
+    '<g id="vLeaf"><path d="'+leafD(20)+'"/><path style="fill:none;stroke:var(--leaf-lo);stroke-width:1.5;stroke-linecap:round;opacity:.7" d="'+veinD(20)+'"/></g>'+
+    '<path id="vTendril" style="fill:none;stroke:var(--leaf);stroke-width:2.4;stroke-linecap:round" d="'+tendrilD()+'"/>'+
+    '<g id="vCluster">'+clusterSVG()+'</g>'+
+    '<g id="vBug"><ellipse style="fill:var(--bee-ink)" cx="0" cy="-7.5" rx="4.2" ry="3.6"/><ellipse style="fill:var(--bug)" cx="0" cy="0" rx="7.2" ry="7.8"/><path style="fill:none;stroke:var(--bee-ink);stroke-width:1.2" d="M0 -7L0 7.6"/>'+
+      '<circle style="fill:var(--bee-ink)" cx="-3.4" cy="-1.5" r="1.7"/><circle style="fill:var(--bee-ink)" cx="3.5" cy="2.6" r="1.6"/><circle style="fill:var(--bee-ink)" cx="-2.6" cy="4.2" r="1.3"/><circle style="fill:var(--bee-ink)" cx="3" cy="-3.4" r="1.3"/>'+
+      '<circle style="fill:#fff" cx="-1.6" cy="-8.4" r="1"/><circle style="fill:#fff" cx="1.6" cy="-8.4" r="1"/></g>'+
+    '</defs>';
+
+  function ribbon(pts,cls){
+    const L=[],R=[];
+    for(let i=0;i<pts.length;i++){
+      const a=pts[Math.max(0,i-1)],b=pts[Math.min(pts.length-1,i+1)];
+      const dx=b[0]-a[0],dy=b[1]-a[1],l=Math.hypot(dx,dy)||1,nx=-dy/l,ny=dx/l,w=pts[i][2]/2;
+      L.push(f1(pts[i][0]+nx*w)+" "+f1(pts[i][1]+ny*w));R.push(f1(pts[i][0]-nx*w)+" "+f1(pts[i][1]-ny*w));
+    }
+    return '<path class="'+cls+'" d="M'+L.join("L")+"L"+R.reverse().join("L")+'Z"/>';
+  }
+
+  let vW=0,vH=0,itemN=0;
+  // one placed piece; "grow" pops it in on first load (outer corners first), "sway" rocks front leaves around their stem
+  function item(x,y,deg,sc,mirror,body,sway){
+    const k=itemN++;
+    const delay=0.1+(1-y/vH)*1.1+(Math.min(x,vW-x)/vW)*0.8;
+    const sw=sway?'<g class="sway" style="animation-duration:'+(3+rnd(k)*2.5).toFixed(2)+'s;animation-delay:-'+(rnd(k+7)*5).toFixed(2)+'s">'+body+'</g>':body;
+    return '<g transform="translate('+f1(x)+' '+f1(y)+') rotate('+f1(mirror?-deg:deg)+') scale('+(mirror?-sc:sc).toFixed(2)+' '+sc.toFixed(2)+')"><g class="grow" style="animation-delay:'+delay.toFixed(2)+'s">'+sw+'</g></g>';
+  }
+  const LEAF_F='<use href="#vLeaf" class="front"/>',LEAF_B='<use href="#vLeaf" class="back"/>';
+
+  function drawVines(){
+    const W=innerWidth,H=innerHeight,svg=$("vines");
+    if(W===vW&&H===vH)return;
+    vW=W;vH=H;itemN=0;
+    svg.setAttribute("viewBox","0 0 "+W+" "+H);
+    const back=[],stems=[],front=[],extra=[];
+    const top=H*0.07;
+
+    [true,false].forEach(left=>{
+      const s=left?1:-1,base=left?15:W-15,ph=left?0:2.1;
+      const X=(y,amp,f,p)=>base+s*amp*Math.sin(y/f+p);
+      const main=[],shoot=[];
+      for(let y=H+14;y>=top;y-=6){const t=(H+14-y)/(H+14-top);
+        main.push([X(y,7,46,ph),y,10-7*t]);shoot.push([X(y,10,24,ph+1.6),y,4.4-3.1*t])}
+      stems.push(ribbon(main,"wood-fill"),ribbon(shoot,"shoot"));
+      let k=0;
+      for(let y=H-80;y>top+40;y-=32+rnd(y+k)*20,k++){
+        const t=1-(y-top)/(H-top),x=X(y,7,46,ph);
+        const sc=(2.15-1.0*t)*(0.85+rnd(k*3+(left?1:2))*0.3);
+        if(k%2===0) front.push(item(x,y,38+rnd(k+11)*38,sc,!left,LEAF_F,true));
+        else back.push(item(x,y,-22-rnd(k+13)*26,sc*0.95,!left,LEAF_B,false));
+        if(k%3===1) extra.push(item(x+s*4,y-8,58+rnd(k)*30,0.9+rnd(k+5)*0.4,!left,'<use href="#vTendril"/>',false));
+        if(k===3||k===8) extra.push(item(x+s*12,y+4,s*6,0.95+rnd(k+3)*0.3,false,'<use href="#vCluster"/>',true));
+      }
+      extra.push(item(X(top,7,46,ph),top+6,18,1.15,!left,'<use href="#vTendril"/>',false));
+      // big leaf fan anchoring the bottom corner
+      [[6,2.7],[36,2.45],[68,2.15]].forEach(([d,c],i)=>front.push(item(left?10:W-10,H-6,d,c,!left,LEAF_F,true)));
+      back.push(item(left?34:W-34,H-4,22,2.2,!left,LEAF_B,false));
+    });
+
+    // bottom hedge
+    const bm=[],bs=[];
+    for(let x=-14;x<=W+14;x+=6){bm.push([x,H-13+5*Math.sin(x/52),8.5]);bs.push([x,H-17+8*Math.sin(x/29+1),3.6])}
+    stems.push(ribbon(bm,"wood-fill"),ribbon(bs,"shoot"));
+    let j=0;
+    for(let x=70;x<W-70;x+=28+rnd(x)*18,j++){
+      const sc=1.1+rnd(j+40)*0.55;
+      if(j%2===0) back.push(item(x,H-10,-55+rnd(j+50)*110,sc,false,LEAF_B,false));
+      else front.push(item(x,H-12,-45+rnd(j+60)*90,sc,false,LEAF_F,true));
+      if(j%6===3) extra.push(item(x+6,H-20,-15+rnd(j)*30,0.9,rnd(j+2)>0.5,'<use href="#vTendril"/>',false));
+    }
+    const bx=Math.round(W*0.68);
+    extra.push(item(bx,H-40,24,1.15,false,'<use href="#vBug"/>',false));
+
+    svg.innerHTML=DEFS+back.join("")+stems.join("")+front.join("")+extra.join("");
   }
   drawVines();addEventListener("resize",drawVines);
+  setTimeout(()=>$("vines").classList.add("settled"),3200);
 
   /* ---------- the bee: wanders around, flies to a new grape and cheers ---------- */
   const bee=$("bee"),beeSvg=$("beeSvg"),bubble=$("beeBubble");
@@ -520,21 +625,41 @@ body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:18p
   if(still)place(0);else requestAnimationFrame(step);
 
   let koVoice=null;
-  function findVoice(){try{koVoice=speechSynthesis.getVoices().find(v=>/^ko/i.test(v.lang))||null}catch(e){}}
+  // natural voice at a gently raised pitch; a big pitch shift is what makes the browser voice sound eerie
+  const VOICE_PREFS=[/(yuna|유나).*(premium|enhanced|고품질|향상)/i,/(premium|enhanced|고품질|향상)/i,/yuna|유나/i,/google/i,/sora|소라/i];
+  function findVoice(){try{
+    const ko=speechSynthesis.getVoices().filter(v=>/^ko/i.test(v.lang));
+    koVoice=null;for(const re of VOICE_PREFS){const v=ko.find(v=>re.test(v.name));if(v){koVoice=v;break}}
+    if(!koVoice)koVoice=ko[0]||null;
+  }catch(e){}}
   if("speechSynthesis" in window){findVoice();try{speechSynthesis.addEventListener("voiceschanged",findVoice)}catch(e){}}
+  let actx=null;
+  function chime(){
+    try{
+      actx=actx||new (window.AudioContext||window.webkitAudioContext)();
+      if(actx.state==="suspended")actx.resume();
+      const t0=actx.currentTime+0.02;
+      [[1318.5,0],[1568,0.09],[2093,0.18],[2637,0.27]].forEach(([f,dt])=>{
+        const o=actx.createOscillator(),g=actx.createGain();
+        o.type="triangle";o.frequency.value=f;
+        g.gain.setValueAtTime(0.0001,t0+dt);g.gain.exponentialRampToValueAtTime(0.18,t0+dt+0.015);g.gain.exponentialRampToValueAtTime(0.0001,t0+dt+0.32);
+        o.connect(g).connect(actx.destination);o.start(t0+dt);o.stop(t0+dt+0.35);
+      });
+    }catch(e){}
+  }
   function speak(text){
     try{
       const ss=window.speechSynthesis;if(!ss)return;
       ss.cancel();
       const u=new SpeechSynthesisUtterance(text);
       u.lang="ko-KR";if(koVoice)u.voice=koVoice;
-      u.pitch=1.9;u.rate=1.05;u.volume=1;     // high and bouncy: a little bee voice
+      u.pitch=1.2;u.rate=1.0;u.volume=1;
       ss.speak(u);
     }catch(e){}
   }
   function praise(r){
     const line="하루야 잘했어!";
-    speak(line);
+    chime();speak("하루야, 잘했어!");
     praising=true;clearTimeout(praiseTimer);
     tx=clampX(r.left+r.width/2);ty=clampY(r.top-20);
     if(still){bx=tx;by=ty;place(0)}
