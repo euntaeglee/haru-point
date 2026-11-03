@@ -28,6 +28,7 @@
   --tangerine:#FF9440;
   --pink:#FF79A8;
   --danger:#E0565B;
+  --bee-ink:#4A3426;
   --shadow:rgba(80,40,120,.18);
   --scrim:rgba(40,25,55,.45);
   --display:"Jua","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
@@ -54,8 +55,8 @@ html,body{height:100%}
 body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:18px;overflow:hidden;
   background-image:radial-gradient(circle at 12% 8%,color-mix(in srgb,var(--leaf) 14%,transparent) 0 120px,transparent 121px);
   -webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;
-  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
-.app{height:100%;max-width:1100px;margin:0 auto;padding-block:12px 8px;box-sizing:border-box;
+  padding-left:max(40px,calc(env(safe-area-inset-left,0px) + 24px));padding-right:max(40px,calc(env(safe-area-inset-right,0px) + 24px))}
+.app{position:relative;z-index:1;height:100%;max-width:1100px;margin:0 auto;padding-block:12px 46px;box-sizing:border-box;
   display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto minmax(0,1fr) auto auto;gap:10px;
   grid-template-areas:"hero" "stats" "slider" "pager" "foot"}
 
@@ -101,12 +102,8 @@ body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:18p
   overscroll-behavior-x:contain;scrollbar-width:none;margin-inline:-8px;-webkit-overflow-scrolling:touch}
 .slider::-webkit-scrollbar{display:none}
 .slide{flex:0 0 100%;scroll-snap-align:center;scroll-snap-stop:always;display:flex;padding:4px 8px 12px;box-sizing:border-box;min-width:0}
-.vine{flex:1;min-width:0;background:var(--card);border-radius:44px;box-shadow:0 8px 0 var(--shadow);
-  display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;padding:12px;overflow:hidden}
-.vine.done{background:linear-gradient(var(--card),var(--card)) padding-box,repeating-linear-gradient(45deg,var(--sun) 0 14px,var(--grape-hi) 14px 28px) border-box;border:6px solid transparent}
-.label{position:absolute;top:14px;left:18px;font-family:var(--display);font-size:24px;color:var(--soft);display:flex;align-items:center;gap:8px;z-index:2}
-.label .no{display:grid;place-items:center;min-width:42px;height:42px;padding:0 8px;box-sizing:border-box;border-radius:21px;background:var(--grape);color:#fff;font-size:26px;font-variant-numeric:tabular-nums}
-.badge{position:absolute;top:14px;right:16px;font-family:var(--display);font-size:20px;background:var(--sun);color:#3B2A4A;border-radius:999px;padding:6px 14px;z-index:2}
+.vine{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative}
+.badge{position:absolute;top:6px;right:6px;font-family:var(--display);font-size:20px;background:var(--sun);color:#3B2A4A;border-radius:999px;padding:6px 14px;z-index:2}
 .cluster{position:relative;display:flex;flex-direction:column;align-items:center}
 .cluster>svg{width:calc(var(--g)*3.4);height:auto;margin-bottom:calc(var(--g)*-0.32);position:relative;z-index:1;pointer-events:none;overflow:visible}
 .bunch{display:flex;flex-direction:column;align-items:center;position:relative;z-index:0}
@@ -156,6 +153,30 @@ body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:18p
   .foot{flex-direction:column;font-size:14px}
 }
 
+/* ---------- border vines ---------- */
+.vines{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+.vines .vs{fill:none;stroke:var(--leaf-lo);stroke-width:5;stroke-linecap:round;stroke-linejoin:round}
+.vines .lf{fill:var(--leaf)}
+.vines .vn{fill:none;stroke:var(--leaf-lo);stroke-width:1.6;stroke-linecap:round}
+.vines .tw{fill:none;stroke:var(--leaf);stroke-width:2.6;stroke-linecap:round}
+.vines .gp{fill:var(--grape)}
+.vines .gh{fill:var(--grape-hi)}
+
+/* ---------- bee ---------- */
+.bee{position:fixed;left:0;top:0;width:92px;height:82px;z-index:15;pointer-events:none;will-change:transform}
+.bee svg{width:100%;height:100%;overflow:visible;transition:transform .2s}
+.bee .body{fill:var(--sun)}
+.bee .ink{fill:var(--bee-ink)}
+.bee .line{fill:none;stroke:var(--bee-ink);stroke-width:2.4;stroke-linecap:round}
+.bee .cheek{fill:var(--pink);opacity:.8}
+.bee .eye-hi{fill:#fff}
+.bee .wing{fill:rgba(255,255,255,.85);stroke:var(--grape-hi);stroke-width:1.5;transform-box:fill-box;transform-origin:50% 100%;animation:flap .11s ease-in-out infinite alternate}
+.bubble{position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);white-space:nowrap;
+  background:var(--card);color:var(--grape-lo);font-family:var(--display);font-size:28px;padding:10px 20px;border-radius:24px;
+  box-shadow:0 5px 0 var(--shadow);animation:pop .35s cubic-bezier(.3,1.6,.5,1)}
+.bubble::after{content:"";position:absolute;top:100%;left:50%;margin-left:-9px;border:9px solid transparent;border-top-color:var(--card)}
+@keyframes flap{from{transform:scaleY(1)}to{transform:scaleY(.45)}}
+
 /* ---------- sheet ---------- */
 .scrim{position:fixed;inset:0;background:var(--scrim);display:grid;place-items:center;z-index:20;
   padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
@@ -188,9 +209,28 @@ body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:18p
 @keyframes hop{0%,80%,100%{translate:0 0}88%{translate:0 -8px}}
 @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
 @media (max-width:520px){.choice{min-height:96px}.choice .ic{font-size:38px}.stat b{font-size:26px}.stat{font-size:16px;padding:8px 12px}
-  .label{font-size:18px;top:10px;left:12px}.label .no{min-width:34px;height:34px;font-size:20px}.badge{font-size:16px;top:10px;right:12px}}
+  .badge{font-size:16px}
+  body{padding-left:max(30px,calc(env(safe-area-inset-left,0px) + 18px));padding-right:max(30px,calc(env(safe-area-inset-right,0px) + 18px))}}
 </style>
 
+<svg class="vines" id="vines" aria-hidden="true"></svg>
+<div class="bee" id="bee" aria-hidden="true" hidden>
+  <div class="bubble" id="beeBubble" hidden>하루야 잘했어!</div>
+  <svg id="beeSvg" viewBox="0 0 80 70">
+    <ellipse class="wing" cx="34" cy="14" rx="11" ry="15"/>
+    <ellipse class="wing" cx="48" cy="16" rx="9" ry="13"/>
+    <path class="ink" d="M15 40 L3 45 L15 50Z"/>
+    <clipPath id="beeClip"><ellipse cx="40" cy="45" rx="26" ry="20"/></clipPath>
+    <ellipse class="body" cx="40" cy="45" rx="26" ry="20"/>
+    <g clip-path="url(#beeClip)"><rect class="ink" x="22" y="20" width="7" height="50"/><rect class="ink" x="35" y="20" width="7" height="50"/></g>
+    <path class="line" d="M54 28 Q56 16 62 10"/><circle class="ink" cx="62" cy="10" r="3.2"/>
+    <path class="line" d="M58 30 Q64 20 71 17"/><circle class="ink" cx="71" cy="17" r="3.2"/>
+    <circle class="ink" cx="55" cy="40" r="3.6"/><circle class="eye-hi" cx="56.2" cy="38.8" r="1.2"/>
+    <circle class="ink" cx="64" cy="41" r="3.2"/><circle class="eye-hi" cx="65" cy="39.9" r="1.1"/>
+    <path class="line" d="M56 48 Q60 52 64 48"/>
+    <ellipse class="cheek" cx="52" cy="48" rx="3.6" ry="2.4"/><ellipse class="cheek" cx="67" cy="48" rx="3" ry="2.2"/>
+  </svg>
+</div>
 <div class="app">
   <h1 class="hero" aria-label="하루 칭찬 포인트">
     <span class="haru" aria-hidden="true">
@@ -285,9 +325,9 @@ body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:18p
 
   /* ---------- sizing: one bunch fits the screen ---------- */
   function fit(){
-    const w=slider.clientWidth-16-28, h=slider.clientHeight-16-28;
+    const w=slider.clientWidth-16, h=slider.clientHeight-16;
     // width: 6 grapes; height: leaf (~0.6g) + 5 overlapping rows (~4.5g) + room for the number label
-    const g=Math.max(36,Math.min(w/6.4,(h-30)/5.3,150));
+    const g=Math.max(36,Math.min(w/6.4,h/5.3,150));
     document.documentElement.style.setProperty("--g",g.toFixed(1)+"px");
   }
   new ResizeObserver(()=>{fit();goTo(cur,false)}).observe(slider);
@@ -301,9 +341,6 @@ body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:18p
       const slide=slider.children[bi];
       const full=isFull(b);
       const vine=document.createElement("div");vine.className="vine"+(full?" done":"");
-      const label=document.createElement("div");label.className="label";
-      const no=document.createElement("span");no.className="no";no.textContent=bi+1;
-      label.append(no,"번째 포도");vine.appendChild(label);
       if(full){const bd=document.createElement("div");bd.className="badge";bd.textContent="다 채웠어요! 🎉";vine.appendChild(bd)}
       const cluster=document.createElement("div");cluster.className="cluster";
       cluster.insertAdjacentHTML("afterbegin",SVG_TOP);
@@ -393,15 +430,17 @@ body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:18p
   $("scrim").addEventListener("click",e=>{if(e.target.id==="scrim")close()});
 
   function change(fn,pop,el,burstText,msg){
+    const r=el?el.getBoundingClientRect():null;   // measure before the grape is re-rendered
     fn();
     let grew=false;
     if(isFull(state.bunches[state.bunches.length-1])){state.bunches.push(newBunch());grew=true}
     cache();render(pop);
-    if(el&&burstText){const r=el.getBoundingClientRect();const s=document.createElement("div");s.className="burst";s.textContent=burstText;
+    if(r&&burstText==="+1")praise(r);
+    if(r&&burstText){const s=document.createElement("div");s.className="burst";s.textContent=burstText;
       s.style.left=(r.left+r.width/2)+"px";s.style.top=(r.top+r.height/2)+"px";document.body.appendChild(s);setTimeout(()=>s.remove(),1200)}
     save();
     if(grew){showToast("포도송이를 다 채웠어요! 🎉 새 포도송이로 가요");setTimeout(()=>goTo(state.bunches.length-1,true),1600)}
-    else showToast(msg);
+    else if(burstText!=="+1")showToast(msg);   // the bee already cheers for +1
   }
 
   /* ---------- carousel position ---------- */
@@ -433,6 +472,75 @@ body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:18p
     try{await ref.set(clone(state));$("status").textContent="저장됨 · 다른 기기와 같이 보여요"}
     catch(e){$("status").textContent="이 아이패드에 저장됨"}
     saving=false;if(again){again=false;save()}
+  }
+
+  /* ---------- vines along the left, bottom and right edges ---------- */
+  const rnd=k=>{const x=Math.sin(k*12.9898)*43758.5453;return x-Math.floor(x)};
+  function drawVines(){
+    const W=innerWidth,H=innerHeight,m=12,svg=$("vines");
+    svg.setAttribute("viewBox","0 0 "+W+" "+H);
+    const segs=[[H-m,s=>[m,s],[1,0]],[W-2*m,s=>[m+s,H-m],[0,-1]],[H-m,s=>[W-m,H-m-s],[-1,0]]];
+    const total=segs.reduce((a,s)=>a+s[0],0);
+    const at=s=>{let o=s;for(const [len,f,n] of segs){if(o<=len){const [x,y]=f(o),w=Math.sin(s/38)*6;return {x:x+n[0]*w,y:y+n[1]*w,n}}o-=len}const l=segs[2];const [x,y]=l[1](l[0]);return {x,y,n:l[2]}};
+    let d="";for(let s=0;s<=total;s+=6){const p=at(s);d+=(s?"L":"M")+p.x.toFixed(1)+" "+p.y.toFixed(1)}
+    let out='<path class="vs" d="'+d+'"/>';
+    let k=0;
+    for(let s=30;s<total-10;s+=58,k++){
+      const p=at(s),a=Math.atan2(p.n[1],p.n[0])*180/Math.PI,side=k%2?1:-1,sc=0.9+rnd(k)*0.5;
+      out+='<g transform="translate('+p.x.toFixed(1)+' '+p.y.toFixed(1)+') rotate('+(a+side*48).toFixed(1)+') scale('+sc.toFixed(2)+')"><path class="lf" d="M0 0 C6 -11 22 -12 32 0 C22 12 6 11 0 0Z"/><path class="vn" d="M3 0 L27 0"/></g>';
+      if(k%5===2) out+='<g transform="translate('+p.x.toFixed(1)+' '+p.y.toFixed(1)+') rotate('+(a-side*30).toFixed(1)+')"><path class="tw" d="M0 0 C10 -2 18 6 13 13 C9 18 1 15 4 9 C6 6 10 7 10 10"/></g>';
+      if(k%7===4){const t=[-p.n[1],p.n[0]];
+        [[14,-6],[14,6],[24,0],[24,-11],[24,11],[33,-5],[33,5],[41,0]].forEach(([u,v])=>{
+          const cx=p.x+p.n[0]*u+t[0]*v,cy=p.y+p.n[1]*u+t[1]*v;
+          out+='<circle class="gp" cx="'+cx.toFixed(1)+'" cy="'+cy.toFixed(1)+'" r="6.2"/><circle class="gh" cx="'+(cx-2).toFixed(1)+'" cy="'+(cy-2).toFixed(1)+'" r="1.8"/>'})}
+    }
+    svg.innerHTML=out;
+  }
+  drawVines();addEventListener("resize",drawVines);
+
+  /* ---------- the bee: wanders around, flies to a new grape and cheers ---------- */
+  const bee=$("bee"),beeSvg=$("beeSvg"),bubble=$("beeBubble");
+  const still=matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let bx=innerWidth*0.75,by=innerHeight*0.35,tx=bx,ty=by,dir=1,praising=false,praiseTimer=null,lastT=0;
+  const clampX=x=>Math.max(110,Math.min(innerWidth-110,x)),clampY=y=>Math.max(110,Math.min(innerHeight-70,y));
+  function pick(){tx=clampX(60+Math.random()*(innerWidth-120));ty=clampY(90+Math.random()*(innerHeight-180))}
+  function place(t){
+    const bob=still?0:Math.sin(t/170)*6;
+    bee.style.transform="translate("+(bx-46).toFixed(1)+"px,"+(by-41+bob).toFixed(1)+"px)";
+    beeSvg.style.transform="scaleX("+dir+")";
+  }
+  function step(t){
+    const dt=Math.min(50,t-(lastT||t));lastT=t;
+    const dx=tx-bx,dy=ty-by,dist=Math.hypot(dx,dy);
+    if(dist<10){if(!praising)pick()}
+    else{const sp=(praising?0.55:0.09)*dt;bx+=dx/dist*Math.min(sp,dist);by+=dy/dist*Math.min(sp,dist);if(Math.abs(dx)>3)dir=dx>0?1:-1}
+    place(t);requestAnimationFrame(step);
+  }
+  bee.hidden=false;pick();
+  if(still)place(0);else requestAnimationFrame(step);
+
+  let koVoice=null;
+  function findVoice(){try{koVoice=speechSynthesis.getVoices().find(v=>/^ko/i.test(v.lang))||null}catch(e){}}
+  if("speechSynthesis" in window){findVoice();try{speechSynthesis.addEventListener("voiceschanged",findVoice)}catch(e){}}
+  function speak(text){
+    try{
+      const ss=window.speechSynthesis;if(!ss)return;
+      ss.cancel();
+      const u=new SpeechSynthesisUtterance(text);
+      u.lang="ko-KR";if(koVoice)u.voice=koVoice;
+      u.pitch=1.9;u.rate=1.05;u.volume=1;     // high and bouncy: a little bee voice
+      ss.speak(u);
+    }catch(e){}
+  }
+  function praise(r){
+    const line="하루야 잘했어!";
+    speak(line);
+    praising=true;clearTimeout(praiseTimer);
+    tx=clampX(r.left+r.width/2);ty=clampY(r.top-20);
+    if(still){bx=tx;by=ty;place(0)}
+    bubble.textContent=line;bubble.hidden=false;
+    bubble.style.animation="none";void bubble.offsetWidth;bubble.style.animation="";
+    praiseTimer=setTimeout(()=>{praising=false;bubble.hidden=true;if(!still)pick()},3000);
   }
 
   fit();render();goTo(cur,false);cache();
