@@ -105,25 +105,8 @@ body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:18p
   overscroll-behavior-x:contain;scrollbar-width:none;margin-inline:-8px;-webkit-overflow-scrolling:touch}
 .slider::-webkit-scrollbar{display:none}
 .slide{flex:0 0 100%;scroll-snap-align:center;scroll-snap-stop:always;display:flex;padding:4px 8px 12px;box-sizing:border-box;min-width:0}
-.vine{flex:1;min-width:0;min-height:0;display:grid;grid-template-rows:minmax(0,1.35fr) minmax(0,1fr);gap:12px;position:relative}
+.vine{flex:1;min-width:0;min-height:0;display:grid;grid-template-rows:minmax(0,1fr);position:relative}
 .cwrap{min-width:0;min-height:0;display:flex;align-items:center;justify-content:center}
-
-/* ---------- this bunch's record ---------- */
-.log{min-height:0;width:min(100%,780px);justify-self:center;box-sizing:border-box;display:flex;flex-direction:column;gap:10px;
-  background:var(--card);border-radius:28px;box-shadow:0 5px 0 var(--shadow);padding:14px 16px}
-.log-head{display:flex;justify-content:space-between;align-items:baseline;font-family:var(--display);font-size:22px;color:var(--grape)}
-.log-head .cnt{color:var(--soft);font-size:18px;font-variant-numeric:tabular-nums}
-.recs{list-style:none;margin:0;padding:0;min-height:0;overflow-y:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:8px;align-content:start}
-.rec{display:flex;align-items:center;gap:10px;background:var(--bg);border-radius:18px;padding:8px 12px;min-width:0}
-.mini{width:22px;height:22px;border-radius:50%;flex:none;background:radial-gradient(circle at 35% 30%,var(--grape-hi),var(--grape) 55%,var(--grape-lo))}
-.mini.used{background:radial-gradient(circle at 35% 30%,var(--used),var(--used-lo))}
-.what{display:flex;flex-direction:column;min-width:0;flex:1}
-.what b{font-family:var(--display);font-weight:400;font-size:19px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.what small{font-size:13px;color:var(--soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.use{font-family:var(--display);font-size:16px;border-radius:999px;padding:5px 11px;white-space:nowrap;flex:none}
-.use.used{background:var(--used);color:var(--ink)}
-.use.left{background:var(--unripe);color:var(--grape)}
-.empty-note{margin:auto;color:var(--soft);font-size:17px;text-align:center;padding:8px}
 .badge{position:absolute;top:6px;right:6px;font-family:var(--display);font-size:20px;background:var(--sun);color:#3B2A4A;border-radius:999px;padding:6px 14px;z-index:2}
 .cluster{position:relative;display:flex;flex-direction:column;align-items:center}
 .cluster>svg{width:calc(var(--g)*2.8);height:auto;margin-bottom:calc(var(--g)*-0.28);position:relative;z-index:0;pointer-events:none;overflow:visible}
@@ -151,6 +134,13 @@ body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:18p
 .grape.used{background:radial-gradient(circle at 36% 30%,var(--used) 0 40%,var(--used-lo) 100%);color:var(--used-ink)}
 .grape.used::after{background:rgba(255,255,255,.4)}
 .grape.used .face{font-size:calc(var(--g)*0.34)}
+/* the record lives on the grape: why it was earned, when, and what it bought */
+.grape .rec-ic{font-size:calc(var(--g)*0.4);line-height:1;filter:drop-shadow(0 2px 0 rgba(0,0,0,.18))}
+.grape .rec-dt{font-family:var(--display);font-size:calc(var(--g)*0.15);line-height:1;margin-top:calc(var(--g)*0.04);font-variant-numeric:tabular-nums}
+.grape .face.rec{display:flex;flex-direction:column;align-items:center;margin-top:calc(var(--g)*0.06);text-shadow:none}
+.grape.used .rec-ic{opacity:.45;filter:grayscale(.6)}
+.grape .spent{position:absolute;right:-4%;top:-4%;z-index:2;width:calc(var(--g)*0.44);height:calc(var(--g)*0.44);border-radius:50%;
+  display:grid;place-items:center;font-size:calc(var(--g)*0.25);line-height:1;background:var(--card);box-shadow:0 3px 0 var(--shadow);pointer-events:none}
 .grape.pop{animation:pop .5s cubic-bezier(.3,1.6,.5,1)}
 
 .pager{grid-area:pager;display:flex;gap:10px;justify-content:center;overflow-x:auto;scrollbar-width:none;padding:4px 2px 6px;min-width:0}
@@ -171,8 +161,6 @@ body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:18p
   .stats{flex-direction:column;align-items:stretch}
   .stat{justify-content:space-between}
   .pager{flex-wrap:wrap}
-  .vine{grid-template-rows:minmax(0,1fr);grid-template-columns:minmax(0,1.15fr) minmax(0,1fr)}
-  .log{align-self:center;max-height:100%}
   .foot span:not(#status){display:none}
   .foot{flex-direction:column;font-size:14px}
 }
@@ -389,7 +377,7 @@ body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:18p
       });
       cluster.appendChild(bunch);
       const cw=document.createElement("div");cw.className="cwrap";cw.appendChild(cluster);
-      vine.append(cw,logEl(b));
+      vine.appendChild(cw);
       slide.replaceChildren(vine);
       slide.setAttribute("aria-label",(bi+1)+"번째 포도송이");
     });
@@ -403,37 +391,20 @@ body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:18p
     $("nHave").textContent=have;$("nUsed").textContent=used;$("nAll").textContent=have+used;
   }
 
-  const fmtDay=t=>{if(!t)return"";const d=new Date(t);return (d.getMonth()+1)+"월 "+d.getDate()+"일"};
-  function logEl(b){
-    const log=document.createElement("div");log.className="log";
-    const recs=b.cells.map((c,i)=>({c,i})).filter(x=>x.c.s!==0).sort((a,z)=>(z.c.at||0)-(a.c.at||0)||z.i-a.i);
-    const head=document.createElement("div");head.className="log-head";
-    const t=document.createElement("span");t.textContent="칭찬 기록";
-    const n=document.createElement("span");n.className="cnt";n.textContent=recs.length+" / "+TOTAL;
-    head.append(t,n);log.appendChild(head);
-    if(!recs.length){const p=document.createElement("p");p.className="empty-note";p.textContent="빈 포도알을 누르면 여기에 기록이 생겨요";log.appendChild(p);return log}
-    const ul=document.createElement("ul");ul.className="recs";
-    recs.forEach(({c})=>{
-      const d=DEEDS.find(x=>x.k===c.d),u=USES.find(x=>x.k===c.u),used=c.s===2;
-      const li=document.createElement("li");li.className="rec";
-      const m=document.createElement("span");m.className="mini"+(used?" used":"");
-      const w=document.createElement("span");w.className="what";
-      const bb=document.createElement("b");bb.textContent=d?d.ic+" "+d.t:"⭐ 칭찬";
-      const sm=document.createElement("small");sm.textContent=[fmtDay(c.at)&&fmtDay(c.at)+" 받음",used&&c.usedAt?fmtDay(c.usedAt)+" 씀":""].filter(Boolean).join(" · ");
-      w.append(bb,sm);
-      const us=document.createElement("span");us.className="use "+(used?"used":"left");
-      us.textContent=used?"→ "+(u?u.ic+" "+u.t:"썼어요"):"아직 안 썼어요";
-      li.append(m,w,us);ul.appendChild(li);
-    });
-    log.appendChild(ul);return log;
-  }
-
   function grapeEl(bi,i,pop){
     const c=state.bunches[bi].cells[i];
     const el=document.createElement("button");
     el.className="grape "+(c.s===1?"on":c.s===2?"used":"empty")+(pop?" pop":"");
     const face=document.createElement("span");face.className="face";
-    face.textContent=c.s===1?FACES[i%FACES.length]:c.s===2?"✓":"+";
+    if(c.s===0) face.textContent="+";
+    else{
+      const d=DEEDS.find(x=>x.k===c.d);
+      face.classList.add("rec");
+      const ic=document.createElement("span");ic.className="rec-ic";ic.textContent=d?d.ic:"⭐";
+      face.appendChild(ic);
+      if(c.at){const t=new Date(c.at);const dt=document.createElement("span");dt.className="rec-dt";dt.textContent=(t.getMonth()+1)+"/"+t.getDate();face.appendChild(dt)}
+      if(c.s===2){const u=USES.find(x=>x.k===c.u);const b=document.createElement("span");b.className="spent";b.textContent=u?u.ic:"✓";el.appendChild(b)}
+    }
     el.setAttribute("aria-label",(i+1)+"번 포도알: "+(c.s===1?"칭찬 포인트 있음":c.s===2?"사용함":"비어 있음"));
     el.appendChild(face);
     bindPress(el,()=>tap(bi,i,el),()=>longPress(bi,i));
