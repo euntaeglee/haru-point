@@ -105,10 +105,28 @@ body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:18p
   overscroll-behavior-x:contain;scrollbar-width:none;margin-inline:-8px;-webkit-overflow-scrolling:touch}
 .slider::-webkit-scrollbar{display:none}
 .slide{flex:0 0 100%;scroll-snap-align:center;scroll-snap-stop:always;display:flex;padding:4px 8px 12px;box-sizing:border-box;min-width:0}
-.vine{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative}
+.vine{flex:1;min-width:0;min-height:0;display:grid;grid-template-rows:minmax(0,1.35fr) minmax(0,1fr);gap:12px;position:relative}
+.cwrap{min-width:0;min-height:0;display:flex;align-items:center;justify-content:center}
+
+/* ---------- this bunch's record ---------- */
+.log{min-height:0;width:min(100%,780px);justify-self:center;box-sizing:border-box;display:flex;flex-direction:column;gap:10px;
+  background:var(--card);border-radius:28px;box-shadow:0 5px 0 var(--shadow);padding:14px 16px}
+.log-head{display:flex;justify-content:space-between;align-items:baseline;font-family:var(--display);font-size:22px;color:var(--grape)}
+.log-head .cnt{color:var(--soft);font-size:18px;font-variant-numeric:tabular-nums}
+.recs{list-style:none;margin:0;padding:0;min-height:0;overflow-y:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:8px;align-content:start}
+.rec{display:flex;align-items:center;gap:10px;background:var(--bg);border-radius:18px;padding:8px 12px;min-width:0}
+.mini{width:22px;height:22px;border-radius:50%;flex:none;background:radial-gradient(circle at 35% 30%,var(--grape-hi),var(--grape) 55%,var(--grape-lo))}
+.mini.used{background:radial-gradient(circle at 35% 30%,var(--used),var(--used-lo))}
+.what{display:flex;flex-direction:column;min-width:0;flex:1}
+.what b{font-family:var(--display);font-weight:400;font-size:19px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.what small{font-size:13px;color:var(--soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.use{font-family:var(--display);font-size:16px;border-radius:999px;padding:5px 11px;white-space:nowrap;flex:none}
+.use.used{background:var(--used);color:var(--ink)}
+.use.left{background:var(--unripe);color:var(--grape)}
+.empty-note{margin:auto;color:var(--soft);font-size:17px;text-align:center;padding:8px}
 .badge{position:absolute;top:6px;right:6px;font-family:var(--display);font-size:20px;background:var(--sun);color:#3B2A4A;border-radius:999px;padding:6px 14px;z-index:2}
 .cluster{position:relative;display:flex;flex-direction:column;align-items:center}
-.cluster>svg{width:calc(var(--g)*3.4);height:auto;margin-bottom:calc(var(--g)*-0.32);position:relative;z-index:0;pointer-events:none;overflow:visible}
+.cluster>svg{width:calc(var(--g)*2.8);height:auto;margin-bottom:calc(var(--g)*-0.28);position:relative;z-index:0;pointer-events:none;overflow:visible}
 .bunch{display:flex;flex-direction:column;align-items:center;position:relative;z-index:1}
 .row{display:flex;gap:calc(var(--g)*0.03);justify-content:center}
 .row+.row{margin-top:calc(var(--g)*-0.13)}
@@ -153,6 +171,8 @@ body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:18p
   .stats{flex-direction:column;align-items:stretch}
   .stat{justify-content:space-between}
   .pager{flex-wrap:wrap}
+  .vine{grid-template-rows:minmax(0,1fr);grid-template-columns:minmax(0,1.15fr) minmax(0,1fr)}
+  .log{align-self:center;max-height:100%}
   .foot span:not(#status){display:none}
   .foot{flex-direction:column;font-size:14px}
 }
@@ -284,7 +304,7 @@ body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:18p
 
 <script>
 (function(){
-  const ROWS=[5,6,5,3,1];               // 20 grapes, wide shoulders tapering to a point
+  const ROWS=[4,3,2,1];                 // 10 grapes tapering to a point
   const TOTAL=ROWS.reduce((a,b)=>a+b,0);
   const DEEDS=[
     {k:"toy",ic:"🧸",t:"장난감 정리"},
@@ -341,9 +361,9 @@ body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:18p
 
   /* ---------- sizing: one bunch fits the screen ---------- */
   function fit(){
-    const w=slider.clientWidth-16, h=slider.clientHeight-16;
-    // width: 6 grapes; height: leaf (~0.6g) + 5 overlapping rows (~4.5g) + room for the number label
-    const g=Math.max(36,Math.min(w/6.4,h/5.3,150));
+    const c=slider.querySelector(".cwrap");if(!c)return;
+    // the bunch area is sized by the layout; width: 4 grapes, height: leaf (~1g) + 4 overlapping rows (~3.6g)
+    const g=Math.max(36,Math.min(c.clientWidth/4.4,c.clientHeight/4.65,150));
     document.documentElement.style.setProperty("--g",g.toFixed(1)+"px");
   }
   new ResizeObserver(()=>{fit();goTo(cur,false)}).observe(slider);
@@ -367,7 +387,9 @@ body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:18p
         for(let j=0;j<n;j++,i++)row.appendChild(grapeEl(bi,i,pop&&pop[0]===bi&&pop[1]===i));
         bunch.appendChild(row);
       });
-      cluster.appendChild(bunch);vine.appendChild(cluster);
+      cluster.appendChild(bunch);
+      const cw=document.createElement("div");cw.className="cwrap";cw.appendChild(cluster);
+      vine.append(cw,logEl(b));
       slide.replaceChildren(vine);
       slide.setAttribute("aria-label",(bi+1)+"번째 포도송이");
     });
@@ -379,6 +401,31 @@ body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:18p
     });
     let have=0,used=0;state.bunches.forEach(b=>b.cells.forEach(c=>{if(c.s===1)have++;else if(c.s===2)used++}));
     $("nHave").textContent=have;$("nUsed").textContent=used;$("nAll").textContent=have+used;
+  }
+
+  const fmtDay=t=>{if(!t)return"";const d=new Date(t);return (d.getMonth()+1)+"월 "+d.getDate()+"일"};
+  function logEl(b){
+    const log=document.createElement("div");log.className="log";
+    const recs=b.cells.map((c,i)=>({c,i})).filter(x=>x.c.s!==0).sort((a,z)=>(z.c.at||0)-(a.c.at||0)||z.i-a.i);
+    const head=document.createElement("div");head.className="log-head";
+    const t=document.createElement("span");t.textContent="칭찬 기록";
+    const n=document.createElement("span");n.className="cnt";n.textContent=recs.length+" / "+TOTAL;
+    head.append(t,n);log.appendChild(head);
+    if(!recs.length){const p=document.createElement("p");p.className="empty-note";p.textContent="빈 포도알을 누르면 여기에 기록이 생겨요";log.appendChild(p);return log}
+    const ul=document.createElement("ul");ul.className="recs";
+    recs.forEach(({c})=>{
+      const d=DEEDS.find(x=>x.k===c.d),u=USES.find(x=>x.k===c.u),used=c.s===2;
+      const li=document.createElement("li");li.className="rec";
+      const m=document.createElement("span");m.className="mini"+(used?" used":"");
+      const w=document.createElement("span");w.className="what";
+      const bb=document.createElement("b");bb.textContent=d?d.ic+" "+d.t:"⭐ 칭찬";
+      const sm=document.createElement("small");sm.textContent=[fmtDay(c.at)&&fmtDay(c.at)+" 받음",used&&c.usedAt?fmtDay(c.usedAt)+" 씀":""].filter(Boolean).join(" · ");
+      w.append(bb,sm);
+      const us=document.createElement("span");us.className="use "+(used?"used":"left");
+      us.textContent=used?"→ "+(u?u.ic+" "+u.t:"썼어요"):"아직 안 썼어요";
+      li.append(m,w,us);ul.appendChild(li);
+    });
+    log.appendChild(ul);return log;
   }
 
   function grapeEl(bi,i,pop){
@@ -668,7 +715,7 @@ body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:18p
     praiseTimer=setTimeout(()=>{praising=false;bubble.hidden=true;if(!still)pick()},3000);
   }
 
-  fit();render();goTo(cur,false);cache();
+  render();fit();goTo(cur,false);cache();
   $("status").textContent="이 아이패드에 저장됨";
 
   (async()=>{
